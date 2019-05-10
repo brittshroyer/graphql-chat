@@ -1,0 +1,8 @@
+# This is where you tell GraphQl what the structure of your data looks like
+
+type Chat @model {
+  id: ID! @isUnique
+  from: String!
+  content: String!
+  createdAt: DateTime!
+}

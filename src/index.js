@@ -14,7 +14,44 @@ import App from './App';
 
 import './index.css';
 
-ReactDOM.render(<App />, document.getElementById('root'));
+// Websocket configuration
+const wsLink = new WebSocketLink({
+
+  uri: 'wss://subscriptions.graph.cool/v1/cjvhijs604prd0110qxrwktfq',
+  options: {
+    reconnect: true
+  }
+});
+
+// HTTP Connection for request response
+const httpLink = new HttpLink({ uri: 'https://api.graph.cool/simple/v1/cjvhijs604prd0110qxrwktfq' });
+
+const link = split(
+//The split method takes 3 arguments.
+//The first is a test that returns a boolean.
+//If the boolean value is true, the request is forwarded to the second (wsLink) argument.
+//If false, it's forwarded to the third (httpLink) argument.
+
+  ({ query }) => {
+    const { kind, operation } = getMainDefinition(query);
+
+    return kind === 'OperationDefinition' && operation === 'subscription';
+  },
+  wsLink,
+  httpLink
+);
+
+const client = new ApolloClient({
+  link,
+  cache: new InMemoryCache()
+});
+
+ReactDOM.render( 
+  <ApolloProvider client={client}>
+    <App />
+  </ApolloProvider>,
+  document.getElementById('root')
+);
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.

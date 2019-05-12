@@ -1,80 +1,29 @@
-import React, { Component } from 'react';
-
-import gql from 'graphql-tag';
-import { graphql, compose } from 'react-apollo';
-
-import Chatbox from './components/Chatbox';
+import React from 'react';
+import { Switch, Route } from 'react-router-dom';
+import Header from './components/Header';
+import Top from './components/Top';
+import Chat from './components/Chat';
+import Login from './Auth/Login';
+import Logout from './Auth/Logout';
 
 import './App.css';
 
-class App extends Component {
-  state = {
-    from: 'anonymous',
-    content: ''
-  };
+import isAuthenticated from './Auth/isAuthenticated';
 
-  _createChat = async e => {
-    if (e.key === 'Enter') {
-      const { content, from } = this.state;
-      await this.props.createChatMutation({
-        variables: { content, from }
-      });
-      this.setState({ content: '' });
-    }
-  };
+const App = () => (
+  <div>
+    <Header isAuthenticated={isAuthenticated()} />
+    <main>
+      <Switch>
+        <Route exact path="/" component={Top} />
+        <Route path="/chat" component={Chat} />
+        <Route path="/login" component={Login} />
+        <Route path="/logout" component={Logout} />
+        }}/>
+      </Switch>
+    </main>
+  </div>
+)
 
-  componentDidMount() {
-    // Get username from prompt
-    // when page loads
-    const from = window.prompt('username');
-    from && this.setState({ from });
-  }
 
-  render() {
-    const allChats = this.props.allChatsQuery.allChats || [];
-    return (
-      <div className="">
-        <div className="container">
-          <h2>Chats</h2>
-          {allChats.map(message => (
-            <Chatbox key={message.id} message={message} />
-          ))}
-          <input
-            value={this.state.content}
-            onChange={e => this.setState({ content: e.target.value })}
-            type="text"
-            placeholder="Start typing"
-            onKeyPress={this._createChat}
-          />
-        </div>
-      </div>
-    );
-  }
-}
-
-const ALL_CHATS_QUERY = gql`
-  query AllChatsQuery {
-    allChats {
-      id
-      createdAt
-      from
-      content
-    }
-  }
-`;
-
-const CREATE_CHAT_MUTATION = gql`
-  mutation CreateChatMutation($content: String!, $from: String!) {
-    createChat(content: $content, from: $from) {
-      id
-      createdAt
-      from
-      content
-    }
-  }
-`;
-
-export default compose(
-  graphql(ALL_CHATS_QUERY, { name: 'allChatsQuery' }),
-  graphql(CREATE_CHAT_MUTATION, { name: 'createChatMutation' })
-)(App);
+export default App;

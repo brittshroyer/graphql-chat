@@ -8,11 +8,14 @@
   "dependencies": {
     "apollo-client-preset": "^1.0.8",
     "apollo-link-ws": "^1.0.17",
+    "auth0-js": "^9.10.2",
+    "auth0-lock": "^11.16.0",
     "graphql": "^14.3.0",
     "graphql-tag": "^2.10.1",
     "react": "^16.8.6",
     "react-apollo": "^2.5.5",
     "react-dom": "^16.8.6",
+    "react-router-dom": "^5.0.0",
     "subscriptions-transport-ws": "^0.9.16",
     "typescript": "^3.4.5"
   },

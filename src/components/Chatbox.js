@@ -9,6 +9,9 @@ const Chatbox = ({message}) => (
       <p>
         {message.content}
       </p>
+      <p>
+        {message.createdAt}
+      </p>
     </div>
   </div>
 );

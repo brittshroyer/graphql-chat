@@ -15,11 +15,16 @@ h2 {
   border-top-right-radius: 4px;
 }
 
-input {
+.chats {
+  height: 400px;
+  overflow-y: scroll;
+}
+
+/* input {
   width: 100%;
   border-radius: 0 !important;
   border-bottom-left-radius: 4px !important;
   border-bottom-right-radius: 4px !important;
   position: absolute;
   bottom: -20px;
-}
+} */

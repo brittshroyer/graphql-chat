@@ -1,10 +1,12 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+
 
 const Top = () => (
   <div>
-    <h2>Top Page</h2>
-    <p>Hi,</p>
-    <p>If you are seeing this message, your authentication app is properly running. Please keep on checking by clicking the link buttons inside the header, which were generated from the <em>Link</em> element of React Router.</p>
+    <h2>GraphQL Chat</h2>
+    <li><Link to='/login'>Login</Link></li>
+    <li><Link to='/chat'>Chat</Link></li>
   </div>
 )
 

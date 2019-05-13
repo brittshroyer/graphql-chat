@@ -4,6 +4,8 @@ import gql from 'graphql-tag';
 import { graphql, compose } from 'react-apollo';
 
 import Chatbox from './Chatbox';
+import Header from './Header';
+
 
 import { Redirect } from 'react-router-dom';
 import isAuthenticated from '../Auth/isAuthenticated';
@@ -14,8 +16,14 @@ class Chat extends Component {
     super(props);
     this.state = {
       from: 'anonymous',
-      content: ''
+      content: '',
+      typing: false
     };
+  }
+
+  onType = (content) => {
+    let typing = content.length > 0;
+    this.setState({ content, typing });
   }
 
 
@@ -29,28 +37,59 @@ class Chat extends Component {
     }
   };
 
+  _subscribeToNewChats = () => {
+    this.props.allChatsQuery.subscribeToMore({
+      document: gql`
+        subscription {
+          Chat(filter: { mutation_in: [CREATED] }) {
+            node {
+              id
+              from
+              content
+              createdAt
+            }
+          }
+        }
+      `,
+      updateQuery: (previous, { subscriptionData }) => {
+        const newChatLinks = [
+          ...previous.allChats,
+          subscriptionData.data.Chat.node
+        ];
+        const result = {
+          ...previous,
+          allChats: newChatLinks
+        };
+        return result;
+      }
+    });
+  };
+
   componentDidMount() {
-    // Get username from prompt
-    // when page loads
-    const from = window.prompt('username');
-    from && this.setState({ from });
+    let username = localStorage.chat_username;
+
+    if (!username) {
+      username = window.prompt('username');
+    }
+    this._subscribeToNewChats();
+    this.setState({ from: username });
   }
 
   render() {
     const allChats = this.props.allChatsQuery.allChats || [];
 
     return isAuthenticated() ? (
-
-
-
         <div className="container">
+          <Header username={this.state.from}/>
           <h2>Chats</h2>
-          {allChats.map(message => (
-            <Chatbox key={message.id} message={message} />
-          ))}
+          <section className="chats">
+            {allChats.map(message => (
+              <Chatbox key={message.id} message={message} />
+            ))}
+          </section>
           <input
             value={this.state.content}
-            onChange={e => this.setState({ content: e.target.value })}
+            onChange={e => this.onType(e.target.value)}
             type="text"
             placeholder="Start typing"
             onKeyPress={this._createChat}

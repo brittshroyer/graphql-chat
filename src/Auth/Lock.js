@@ -29,8 +29,10 @@ class Lock extends Component {
       localStorage.setItem('access_token', authResult.accessToken);
       localStorage.setItem('id_token', authResult.idToken);
       localStorage.setItem('expires_at', expiresAt);
+      localStorage.setItem('chat_username', authResult.idTokenPayload.name);
 
-      this.setState({ loggedIn: true });
+      this.setState({loggedIn: true});
+
     });
   }
 
@@ -42,7 +44,7 @@ class Lock extends Component {
   }
 
   render() {
-    const style = { marginTop: '32px' }
+    const style = { marginTop: '32px' };
 
     return(
       !this.state.loggedIn ? (

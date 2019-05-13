@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 
 const Header = (props) => {
-  let username = props.username || 'friend';
+  let username = props.user || 'friend';
   return (
     <header>
       <h1>Welcome {username}!</h1>

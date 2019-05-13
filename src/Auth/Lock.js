@@ -26,10 +26,13 @@ class Lock extends Component {
   onAuthenticated() {
     this.lock.on('authenticated', (authResult) => {
       let expiresAt = JSON.stringify((authResult.expiresIn * 1000) + new Date().getTime());
+      let username = authResult.idTokenPayload.name ? authResult.idTokenPayload.name : authResult.idTokenPayload.email;
+
       localStorage.setItem('access_token', authResult.accessToken);
       localStorage.setItem('id_token', authResult.idToken);
       localStorage.setItem('expires_at', expiresAt);
-      localStorage.setItem('chat_username', authResult.idTokenPayload.name);
+      localStorage.setItem('email', authResult.idTokenPayload.email);
+      localStorage.setItem('world_chat_username', username);
 
       this.setState({loggedIn: true});
 

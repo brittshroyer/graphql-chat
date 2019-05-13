@@ -4,97 +4,204 @@ import gql from 'graphql-tag';
 import { graphql, compose } from 'react-apollo';
 
 import Chatbox from './Chatbox';
-import Header from './Header';
+import UserCount from './UserCount';
+import ChatInput from './ChatInput';
+// import Header from './Header';
 
 
 import { Redirect } from 'react-router-dom';
 import isAuthenticated from '../Auth/isAuthenticated';
+
+const ALL_MESSAGES_QUERY = gql`
+  query allMessages {
+    allMessages {
+      id
+      content
+      createdAt
+      sentBy {
+        id
+        name
+      }
+    }
+  }
+`;
+
+const CREATE_MESSAGE_MUTATION = gql`
+  mutation createMessage($content: String!, $sentById: ID!) {
+    createMessage(content: $content, sentById: $sentById) {
+      id
+      content
+      createdAt
+      sentBy {
+        id
+        name
+      }
+    }
+  }
+`;
+
+const ALL_LOCATIONS_QUERY = gql`
+  query allLocations {
+    allLocations {
+      id
+      latitude
+      longitude
+      user {
+        id
+        name
+      }
+    }
+  }
+`;
+
+const CREATE_LOCATION_AND_USER_MUTATION = gql`
+  mutation createLocationAndUser($name: String!, $latitude: Float!, $longitude: Float!) {
+    createLocation(latitude: $latitude, longitude: $longitude, user: { name: $name }) {
+      id
+      latitude
+      longitude
+      user {
+        id
+        name
+      }
+    }
+  }
+`;
+
+const UPDATE_LOCATION_MUTATION = gql`
+  mutation updateLocation($locationId: ID!, $latitude: Float!, $longitude: Float!) {
+    updateLocation(id: $locationId, latitude: $latitude, longitude: $longitude) {
+      user {
+        id
+        name
+      }
+      id
+      latitude
+      longitude
+    }
+  }
+`;
 
 class Chat extends Component {
 
   constructor(props) {
     super(props);
     this.state = {
-      from: 'anonymous',
-      content: '',
-      typing: false
+      user: localStorage.getItem('world_chat_username'),
+      content: ''
     };
   }
 
-  onType = (content) => {
-    let typing = content.length > 0;
-    this.setState({ content, typing });
-  }
+  _createMessage = async e => {
+    this.props.createMessageMutation({
+      variables: {
+        content: this.state.content,
+        sentById: this.props.UserId
+      }
+    });
 
-
-  _createChat = async e => {
-    if (e.key === 'Enter') {
-      const { content, from } = this.state;
-      await this.props.createChatMutation({
-        variables: { content, from }
-      });
-      this.setState({ content: '' });
-    }
   };
 
-  _subscribeToNewChats = () => {
-    this.props.allChatsQuery.subscribeToMore({
+  _subscribeToLocationUpdates = () => {
+    this.props.allLocationsQuery.subscribeToMore({
       document: gql`
         subscription {
-          Chat(filter: { mutation_in: [CREATED] }) {
+          Location(
+            filter: {
+              OR: [
+                { mutation_in: [CREATED] }
+                { AND: [{ mutation_in: [UPDATED] }, { updatedFields_contains_some: ["latitude", "longitude"] }] }
+              ]
+            }
+          ) {
+            mutation
             node {
               id
-              from
-              content
-              createdAt
+              latitude
+              longitude
+              user {
+                id
+                name
+              }
             }
           }
         }
       `,
-      updateQuery: (previous, { subscriptionData }) => {
-        const newChatLinks = [
-          ...previous.allChats,
-          subscriptionData.data.Chat.node
-        ];
-        const result = {
-          ...previous,
-          allChats: newChatLinks
-        };
-        return result;
-      }
+      updateQuery: (previousState, { subscriptionData }) => {
+        if (subscriptionData.data.Location.mutation === 'CREATED') {
+          const newLocation = subscriptionData.data.Location.node
+          const locations = previousState.allLocations.concat([newLocation])
+          return {
+            allLocations: locations,
+          }
+        } else if (subscriptionData.data.Location.mutation === 'UPDATED') {
+          const updatedLocation = subscriptionData.data.Location.node
+          const locations = previousState.allLocations.concat([updatedLocation])
+          const oldLocationIndex = locations.findIndex(location => {
+            return updatedLocation.id === location.id
+          })
+          locations[oldLocationIndex] = updatedLocation
+          return {
+            allLocations: locations,
+          }
+        }
+        return previousState
+      },
+    })
+  };
+
+  _subscribeToNewMessages = () => {
+    this.props.allMessagesQuery.subscribeToMore({
+      document: gql`
+        subscription {
+          Message(filter: { mutation_in: [CREATED] }) {
+            node {
+              id
+              content
+              createdAt
+              sentBy {
+                id
+                name
+              }
+            }
+          }
+        }
+      `,
+      updateQuery: (previousState, { subscriptionData }) => {
+        const newMessage = subscriptionData.data.Message.node
+        const messages = previousState.allMessages.concat([newMessage])
+        return {
+          allMessages: messages,
+        }
+      },
+      onError: err => console.error(err)
     });
   };
 
   componentDidMount() {
-    let username = localStorage.chat_username;
-
-    if (!username) {
-      username = window.prompt('username');
-    }
-    this._subscribeToNewChats();
-    this.setState({ from: username });
+    this._subscribeToNewMessages();
+    this._subscribeToLocationUpdates();
   }
 
   render() {
-    const allChats = this.props.allChatsQuery.allChats || [];
+    const allMessages = this.props.allMessagesQuery.allMessages || [];
 
     return isAuthenticated() ? (
-        <div className="container">
-          <Header username={this.state.from}/>
-          <h2>Chats</h2>
-          <section className="chats">
-            {allChats.map(message => (
-              <Chatbox key={message.id} message={message} />
-            ))}
-          </section>
-          <input
-            value={this.state.content}
-            onChange={e => this.onType(e.target.value)}
-            type="text"
-            placeholder="Start typing"
-            onKeyPress={this._createChat}
-          />
-        </div>
+      <div className="container">
+        <UserCount />
+        <h2>Chats</h2>
+        <section className="chats">
+          {allMessages.map(message => (
+            <Chatbox key={message.id} message={message} />
+          ))}
+        </section>
+        <ChatInput
+        message={this.state.content}
+        onTextInput={(content) => this.setState({content})}
+        onResetText={() => this.setState({content: ''})}
+        onSend={this._createMessage}
+        />
+      </div>
     ) : (
       <Redirect to={{
         pathname: '/login',
@@ -104,29 +211,10 @@ class Chat extends Component {
   }
 }
 
-const ALL_CHATS_QUERY = gql`
-  query AllChatsQuery {
-    allChats {
-      id
-      createdAt
-      from
-      content
-    }
-  }
-`;
-
-const CREATE_CHAT_MUTATION = gql`
-  mutation CreateChatMutation($content: String!, $from: String!) {
-    createChat(content: $content, from: $from) {
-      id
-      createdAt
-      from
-      content
-    }
-  }
-`;
-
 export default compose(
-  graphql(ALL_CHATS_QUERY, { name: 'allChatsQuery' }),
-  graphql(CREATE_CHAT_MUTATION, { name: 'createChatMutation' })
+  graphql(ALL_MESSAGES_QUERY, { name: 'allMessagesQuery' }),
+  graphql(CREATE_MESSAGE_MUTATION, { name: 'createMessageMutation' }),
+  graphql(ALL_LOCATIONS_QUERY, { name: 'allLocationsQuery' }),
+  graphql(CREATE_LOCATION_AND_USER_MUTATION, { name: 'createLocationAndUserMutation' }),
+  graphql(UPDATE_LOCATION_MUTATION, { name: 'updateLocationMutation' })
 )(Chat);

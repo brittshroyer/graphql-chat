@@ -1,10 +1,13 @@
-import React from 'react'
+import React from 'react';
+
+// import Textarea from 'react-textarea-autosize';
 
 const ChatInput = (props) => {
   return (
-    <div className='ChatInput'>
+    <div>
       <input
-        placeholder='Enter your message...'
+        className='chat-input'
+        placeholder='Send a message'
         type='text'
         value={props.message}
         autoFocus={true}

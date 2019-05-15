@@ -31,7 +31,7 @@ class Lock extends Component {
       localStorage.setItem('access_token', authResult.accessToken);
       localStorage.setItem('id_token', authResult.idToken);
       localStorage.setItem('expires_at', expiresAt);
-      localStorage.setItem('email', authResult.idTokenPayload.email);
+      // localStorage.setItem('email', authResult.idTokenPayload.email);
       localStorage.setItem('world_chat_username', username);
 
       this.setState({loggedIn: true});

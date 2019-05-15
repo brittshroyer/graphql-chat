@@ -7,5 +7,20 @@ h5 {
 }
 
 .chat-box {
-  padding: 0 15px;
+  padding: 6px 15px;
+  margin-bottom: 6px;
+}
+
+.chat-box {
+  display: inline-flex;
+  flex-direction:column;
+  justify-content: space-around;
+}
+
+.chat-message {
+  border-radius: 10px;
+  color: #fff;
+  display: inline-block;
+  padding: 10px;
+  margin-bottom: 2px;
 }

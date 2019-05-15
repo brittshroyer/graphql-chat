@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "devDependencies": {
+    "babel-plugin-emotion": "^10.0.9",
     "react-scripts": "3.0.1"
   },
   "dependencies": {
@@ -12,10 +13,15 @@
     "auth0-lock": "^11.16.0",
     "graphql": "^14.3.0",
     "graphql-tag": "^2.10.1",
+    "lodash": "^4.17.11",
+    "moment": "^2.24.0",
     "react": "^16.8.6",
     "react-apollo": "^2.5.5",
     "react-dom": "^16.8.6",
+    "react-google-maps": "^9.4.5",
     "react-router-dom": "^5.0.0",
+    "react-spinners": "^0.5.4",
+    "react-textarea-autosize": "^7.1.0",
     "subscriptions-transport-ws": "^0.9.16",
     "typescript": "^3.4.5"
   },

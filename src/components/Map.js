@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
-import { Redirect } from 'react-router-dom';
+import { Redirect, withRouter } from 'react-router-dom';
 
 import isAuthenticated from '../Auth/isAuthenticated';
 
 import { withApollo, graphql, compose } from 'react-apollo';
 
 import { ALL_LOCATIONS_QUERY, USER_FOR_ID_QUERY, LOCATION_SUBSCRIPTION  } from '../graphql/queries';
-import { CREATE_LOCATION_AND_USER_MUTATION, UPDATE_LOCATION_MUTATION } from '../graphql/mutations';
+import { CREATE_LOCATION_AND_USER_MUTATION, UPDATE_LOCATION_MUTATION, UPDATE_USER_STATUS_MUTATION } from '../graphql/mutations';
 
 import Chat from './Chat';
 import WorldGoogleMap from './WorldMap';
@@ -21,20 +21,20 @@ class Map extends Component {
   }
 
   async componentDidMount() {
-
-    this.locationSubscription = this.props.allLocationsQuery.subscribeToMore({
+    await this.props.allLocationsQuery.subscribeToMore({
       document: LOCATION_SUBSCRIPTION,
       variables: null,
       updateQuery: (previousState, {subscriptionData}) => {
         const { data } = subscriptionData;
         if (data.Location.mutation === 'CREATED') {
-          const newLocation = data.node;
+          const newLocation = data.Location.node;
           const locations = previousState.allLocations.concat([newLocation]);
 
           return { allLocations: locations };
-        } else if (data.mutation === 'UPDATED') {
+
+        } else if (data.Location.mutation === 'UPDATED') {
           const locations = previousState.allLocations.slice();
-          const updatedLocation = data.node;
+          const updatedLocation = data.Location.node;
           const oldLocationIndex = locations.findIndex(location => {
             return updatedLocation.id === location.id;
           });
@@ -51,15 +51,17 @@ class Map extends Component {
     // Check if user already exists
     if (!userID) {
       this._createNewUser();
-    }
-    else {
+    } else {
       this._updateExistingUser(userID);
     }
+
+    this.makeUserActive();
+
   }
 
   componentWillReceiveProps(nextProps) {
-
     if (nextProps.allLocationsQuery.allLocations) {
+      // array of objects with username & position
       const newMarkers = nextProps.allLocationsQuery.allLocations.map(location => {
         const isOwnMarker = location.user.id === this.state.userID
         return {
@@ -85,9 +87,9 @@ class Map extends Component {
           onMapClick={this.handleMapClick}
           markers={this.state.markers}
           onMarkerClick={this.handleMarkerClick}
-          onMarkerClose={this.handleMarkerClose}
         />
-        <Chat user={this.state.userID} />
+        <Chat map={this} user={this.state.userID} />
+        <button onClick={() => this.logout()}>Logout</button>
       </div>
     ) : (
       <Redirect to={{
@@ -187,27 +189,13 @@ class Map extends Component {
     }
   }
 
-  handleMarkerClick = (targetMarker) => {
+  handleMarkerClick = (targetMarker, action) => {
     this.setState({
       markers: this.state.markers.map(marker => {
         if (marker === targetMarker) {
           return {
             ...marker,
-            showInfo: true,
-          }
-        }
-        return marker
-      })
-    });
-  };
-
-  handleMarkerClose = (targetMarker) => {
-    this.setState({
-      markers: this.state.markers.map(marker => {
-        if (marker === targetMarker) {
-          return {
-            ...marker,
-            showInfo: false,
+            showInfo: action === 'open' ? true : false,
           };
         }
         return marker;
@@ -235,10 +223,32 @@ class Map extends Component {
 
     return {latitude: newLatitude, longitude: newLongitude};
   };
+
+  makeUserActive = () => {
+    const { userID } = this.state;
+    const active = true;
+
+    this.props.updateUserStatusMutation({
+      variables: { id: userID, active }
+    });
+  };
+
+  logout = () => {
+    const { userID } = this.state;
+    const active = false;
+
+    this.props.updateUserStatusMutation({
+      variables: { id: userID, active }
+    });
+
+    this.props.history.push('/logout');
+  };
 }
 
 export default compose(
+  withRouter,
   graphql(ALL_LOCATIONS_QUERY, {name: 'allLocationsQuery'}),
   graphql(CREATE_LOCATION_AND_USER_MUTATION, {name: 'createLocationAndUserMutation'}),
-  graphql(UPDATE_LOCATION_MUTATION, {name: 'updateLocationMutation'})
+  graphql(UPDATE_LOCATION_MUTATION, {name: 'updateLocationMutation'}),
+  graphql(UPDATE_USER_STATUS_MUTATION, {name: 'updateUserStatusMutation'})
 )(withApollo(Map));

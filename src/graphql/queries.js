@@ -31,7 +31,7 @@ const USER_FOR_ID_QUERY = gql`
 const LOCATION_SUBSCRIPTION = gql`
   subscription {
     Location(filter: {
-        mutation_in: [CREATED, UPDATED]
+      mutation_in: [CREATED, UPDATED]
     }) {
       mutation
       node {
@@ -46,6 +46,49 @@ const LOCATION_SUBSCRIPTION = gql`
     }
   }
 `;
+
+const ACTIVE_USERS_SUBSCRIPTION = gql`
+  subscription {
+    User(filter: {
+        mutation_in: [CREATED, UPDATED]
+        updatedFields_contains: "active"
+    }) {
+      mutation
+      node {
+        id
+        name
+        active
+        typing
+      }
+    }
+  }
+`;
+
+
+  const ACTIVE_USERS_QUERY = gql`
+    query allUsers($active: Boolean!) {
+      allUsers(
+        filter: {
+          active: $active
+        }
+      ) {
+      id
+      name
+      }
+    }
+  `;
+
+// const ACTIVE_USERS_QUERY = gql`
+//   query allUsers($active: Boolean!) {
+//
+//     User
+//       id
+//       name
+//       active: $active
+//       typing
+//     }
+//   }
+// `;
 
 const MESSAGES_SUBSCRIPTION = gql`
   subscription {
@@ -82,6 +125,8 @@ export {
   USER_FOR_ID_QUERY,
   LOCATION_SUBSCRIPTION,
   MESSAGES_SUBSCRIPTION,
+  ACTIVE_USERS_QUERY,
+  ACTIVE_USERS_SUBSCRIPTION,
   ALL_MESSAGES_QUERY
 };
 

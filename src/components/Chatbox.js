@@ -15,21 +15,6 @@ const Chatbox = ({message, isOwnMessage}) => {
 
   // TODO: Build dynamic time stamp functionality
 
-  // let withinTheHour = moment(createdAt).isAfter(moment().subtract(1, 'hours'));
-  // let withinTheDay = moment(createdAt).isAfter(moment().subtract(1, 'day'));
-  // let withinTheMinute = moment(createdAt).isAfter(moment().subtract(1, 'minute'));
-  //
-  // if (withinTheMinute) {
-  //   createdAt = 'Just now';
-  // } else if (withinTheHour) {
-  //   createdAt = moment(createdAt).startOf('hour').fromNow();
-  // } else if (withinTheDay) {
-  //   createdAt = moment(createdAt).format('LT');
-  // } else {
-  //   createdAt = moment(createdAt).format('LLL');
-  // }
-
-
   return (
     <div style={{textAlign}}>
       <p className="chat-message" style={{background: chatColor}}>

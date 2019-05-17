@@ -18,6 +18,15 @@ const CREATE_LOCATION_AND_USER_MUTATION = gql`
     }
 `;
 
+const UPDATE_USER_STATUS_MUTATION = gql`
+    mutation updateUserStatus($id: ID!, $active: Boolean!) {
+      updateUser(id: $id, active: $active) {
+        id
+        active
+      }
+    }
+`;
+
 const UPDATE_LOCATION_MUTATION = gql`
   mutation updateLocation($locationId: ID!, $latitude: Float!, $longitude: Float!) {
     updateLocation(id: $locationId, latitude: $latitude, longitude: $longitude) {
@@ -49,5 +58,6 @@ const CREATE_MESSAGE_MUTATION = gql`
 export {
   CREATE_LOCATION_AND_USER_MUTATION,
   UPDATE_LOCATION_MUTATION,
-  CREATE_MESSAGE_MUTATION
+  CREATE_MESSAGE_MUTATION,
+  UPDATE_USER_STATUS_MUTATION
 };

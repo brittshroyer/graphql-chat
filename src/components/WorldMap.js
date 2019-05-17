@@ -39,13 +39,13 @@ const WorldGoogleMap = compose(
         {...marker}
         showInfo={false}
         icon={marker.isOwnMarker ? require('../assets/marker_blue.svg') : require('../assets/marker.svg')}
-        onClick={() => props.onMarkerClick(marker)}
+        onClick={() => props.onMarkerClick(marker, 'open')}
         defaultAnimation={2}
         key={index}
       >
         {marker.showInfo && (
           <InfoWindow
-            onCloseClick={() => props.onMarkerClose(marker)}>
+            onCloseClick={() => props.onMarkerClick(marker, 'close')}>
             <div className=''>{marker.userName}</div>
           </InfoWindow>
         )}

@@ -127,8 +127,13 @@ class Chat extends Component {
       variables: {active: true},
       updateQuery: (previousState, { subscriptionData }) => {
         const modifiedUser = subscriptionData.data.User.node;
-        console.log('modifiedUser', modifiedUser);
-        const activeUsers = previousState ? previousState.allUsers.concat([modifiedUser]) : [modifiedUser];
+        let activeUsers;
+        if (modifiedUser.active) {
+          activeUsers = previousState ? previousState.allUsers.concat([modifiedUser]) : [modifiedUser];
+        } else {
+          activeUsers = previousState ? previousState.allUsers.concat([modifiedUser]) : [modifiedUser];
+
+        }
         this.setState({ activeUsers });
         return {
           allUsers: activeUsers

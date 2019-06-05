@@ -6,6 +6,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   height: 100vh;
+  background: #4D4D4D;
 }
 
 code {
@@ -16,4 +17,5 @@ code {
 .main-container {
   min-height: 600px;
   height: 100vh;
+  background: #4D4D4D;
 }

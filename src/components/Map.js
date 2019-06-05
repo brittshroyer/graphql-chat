@@ -89,7 +89,7 @@ class Map extends Component {
           onMarkerClick={this.handleMarkerClick}
         />
         <Chat map={this} user={this.state.userID} />
-        <button onClick={() => this.logout()}>Logout</button>
+        <a className="exit-btn" onClick={() => this.logout()}>Logout</a>
       </div>
     ) : (
       <Redirect to={{

@@ -73,3 +73,15 @@
   font-size: 11px;
   color: #999999;
 }
+
+a.exit-btn {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  display: block;
+  color: white !important;
+  background: #4D4D4D;
+  padding: 4px;
+  border-radius: 3px;
+  cursor: pointer;
+}
